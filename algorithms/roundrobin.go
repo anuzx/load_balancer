@@ -12,12 +12,12 @@ type RoundRobin struct {
 	mu      sync.Mutex
 }
 
-// factory fn 
+// factory fn
 func NewRoundRobin() *RoundRobin {
 	return &RoundRobin{}
 }
 
-//*RoundRobin instead of RoundRobin because next modifies rr.current (we want to modify actual round robin object)
+// *RoundRobin instead of RoundRobin because next modifies rr.current (we want to modify actual round robin object)
 func (rr *RoundRobin) Next(pool []*servers.Server) *servers.Server {
 	//because multiple http reqs can call
 	rr.mu.Lock()
@@ -33,7 +33,7 @@ func (rr *RoundRobin) Next(pool []*servers.Server) *servers.Server {
 
 		rr.current++
 
-		if server.IsHealthy {
+		if server.IsHealthy() {
 			return server
 		}
 	}

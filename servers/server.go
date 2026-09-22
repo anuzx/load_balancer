@@ -4,18 +4,36 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 )
 
 type Server struct {
 	URL       *url.URL
-	IsHealthy bool
+	mu        sync.RWMutex //mutiple reads but only 1 write access
+	isHealthy bool         //only server controls access to its health state
+}
+
+// reading health happens very frequently
+func (s *Server) IsHealthy() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.isHealthy
+}
+
+// writing health happens relatively rarely
+func (s *Server) SetHealthy(healthy bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.isHealthy = healthy
 }
 
 func Start(port string, id string) {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "hello from %s\n", id)
+		fmt.Fprintf(w, "Hello from %s\n", id)
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

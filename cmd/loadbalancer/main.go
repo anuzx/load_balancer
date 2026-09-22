@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
+
 	"github.com/anuzx/load_balancer/algorithms"
 	"github.com/anuzx/load_balancer/loadbalancer"
 	"github.com/anuzx/load_balancer/servers"
 )
 
 func main() {
-	servers := []*servers.Server{
+	backendServers := []*servers.Server{
 		loadbalancer.NewServer("http://localhost:8081"),
 		loadbalancer.NewServer("http://localhost:8082"),
 		loadbalancer.NewServer("http://localhost:8083"),
@@ -17,9 +19,10 @@ func main() {
 
 	//we are giving load balancer the list of servers and the algo to use
 	lb := loadbalancer.NewLoadBalancer(
-		servers,
+		backendServers,
 		selector,
 	)
+	ctx := context.Background()
 
-	lb.Start()
+	lb.Start(ctx)
 }
