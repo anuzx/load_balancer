@@ -1,4 +1,4 @@
-.PHONY: run  
+.PHONY: lb
 
-run :
-	go run .
+lb :
+	go run ./cmd/loadbalancer

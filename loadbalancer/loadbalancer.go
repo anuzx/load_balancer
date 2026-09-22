@@ -5,50 +5,47 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/anuzx/load_balancer/algorithms"
+	"github.com/anuzx/load_balancer/servers"
 )
+//our lb doesn't says round robin anywhere ,lb only knows "give me something that can select a server"
 
-type Server struct {
-	URL string
+type LoadBalancer struct {
+	Servers  []*servers.Server
+	Selector algorithms.Selector
 }
 
-var servers = []Server{
-	{
-		URL: "http://localhost:8081",
-	},
-	{
-		URL: "http://localhost:8082",
-	},
-	{
-		URL: "http://localhost:8083",
-	},
+func NewLoadBalancer(
+	servers []*servers.Server,
+	selector algorithms.Selector,
+) *LoadBalancer {
+	return &LoadBalancer{
+		Servers:  servers,
+		Selector: selector,
+	}
 }
 
-var current = 0
+func (lb *LoadBalancer) handler(w http.ResponseWriter, r *http.Request) {
+	server := lb.Selector.Next(lb.Servers)
 
-func getNextServer() Server {
-	server := servers[current]
-
-	current = (current + 1) % len(servers)
-
-	return server
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	server := getNextServer()
-
-	target, err := url.Parse(server.URL)
-
-	if err != nil {
-		http.Error(w, "invalid server URL", http.StatusInternalServerError)
+	if server == nil {
+		http.Error(
+			w,
+			"No healthy servers available",
+			http.StatusServiceUnavailable,
+		)
+		return
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy := httputil.NewSingleHostReverseProxy(server.URL)
 
 	proxy.ServeHTTP(w, r)
 }
 
-func Start() {
-	http.HandleFunc("/", handler)
+func (lb *LoadBalancer) Start() {
+
+	http.HandleFunc("/", lb.handler)
 
 	fmt.Println("Load balancer running on :8080")
 
@@ -56,5 +53,18 @@ func Start() {
 
 	if err != nil {
 		fmt.Println("load balancer error:", err)
+	}
+}
+
+func NewServer(rawURL string) *servers.Server {
+	parsedURL, err := url.Parse(rawURL)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return &servers.Server{
+		URL:       parsedURL,
+		IsHealthy: true,
 	}
 }

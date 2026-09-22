@@ -3,10 +3,15 @@ package servers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
+type Server struct {
+	URL       *url.URL
+	IsHealthy bool
+}
+
 func Start(port string, id string) {
-	//so that each 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
