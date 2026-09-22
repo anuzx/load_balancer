@@ -1,0 +1,42 @@
+
+# Exclude git metadata and configuration
+.git
+.gitignore
+.gitattributes
+
+# Exclude local Docker-related configurations
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Exclude local Go binary compilation outputs
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Exclude Go test binaries and coverage reports
+*.test
+*.out
+coverage.txt
+
+# Exclude IDE and text editor metadata
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Exclude OS-specific junk files
+.DS_Store
+Thumbs.db
+
+# Exclude local logs and environment variables
+*.log
+.env
+.env.*
