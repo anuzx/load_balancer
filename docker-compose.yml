@@ -1,0 +1,15 @@
+services:
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/server/Dockerfile
+    expose:
+      - "8081"
+
+  loadbalancer:
+    build:
+      context: .
+      dockerfile: docker/loadbalancer/Dockerfile
+    ports:
+      - "8080:8080"
